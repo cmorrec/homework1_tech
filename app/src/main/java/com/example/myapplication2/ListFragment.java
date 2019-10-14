@@ -119,7 +119,7 @@ public class ListFragment extends Fragment {
                     DataSource.MyData myData = mAdapter.mData.get(pos);
                     getFragmentManager()
                             .beginTransaction()
-                            .replace(R.id.top_container,  SecondFragment.newInstance(Integer.parseInt(myData.mTitle)))
+                            .replace(R.id.top_container,  SecondFragment.newInstance(Integer.parseInt(myData.mTitle), mTitle.getCurrentTextColor()))
                             .addToBackStack(null)
                             .commit();
 
