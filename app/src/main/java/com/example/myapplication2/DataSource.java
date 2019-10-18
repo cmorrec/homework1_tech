@@ -1,44 +1,43 @@
 package com.example.myapplication2;
 
-import android.content.Context;
+
+
 import java.util.ArrayList;
-import java.util.List;
+
 
 
 public class DataSource  {
 
-    private static final List<MyData> mData= new ArrayList<>();
-    static int DEFAULT_SIZE = 100;
+    public static final ArrayList<String> mData= new ArrayList<>();
     private static DataSource sInstance;
-    Context mContext;
-
-
-    public DataSource() {
+    static int mSize;
 
 
 
-
-        for (int i = 1; i <= DEFAULT_SIZE; i++) {
+    private DataSource(int size) {
+        for (int i = 1; i <= size; i++) {
             String title = String.valueOf(i);
-            mData.add(new MyData(title));
+            mData.add(title);
         }
     }
 
+
     public static void push(){
-        mData.add(new MyData(String.valueOf(++DEFAULT_SIZE)));
+        mData.add(String.valueOf(++mSize));
     }
 
-    public List<MyData> getData() {
+    public ArrayList<String> getData() {
         return mData;
     }
 
-    public synchronized static DataSource getInstance() {
+    public synchronized static DataSource getInstance(int size) {
         if (sInstance == null) {
-            sInstance = new DataSource();
+            mSize=size;
+            sInstance = new DataSource(mSize);
         }
         return sInstance;
     }
-
+/*
     public static class MyData {
 
         public MyData(String title) {
@@ -46,5 +45,5 @@ public class DataSource  {
         }
 
         String mTitle;
-    }
+    }*/
 }

@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 
 import androidx.fragment.app.Fragment;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -24,42 +25,65 @@ public class ListFragment extends Fragment {
 
     private MyDataAdapter mAdapter;
     int DEFAULT_SIZE = 100;
+    RecyclerView grid;
+    public static final String STATE = "change";
+    int mSize;
 
+    public interface OnItemSelectedListener {
+
+        public void onItemSelected(int data, int color);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_list, container, false);
-
-        int mColumnCount = getResources().getBoolean(R.bool.is_horizontal) ?
-                  4 : 3;
+        grid = view.findViewById(R.id.gridView);
+        int mColumnCount = getResources().getInteger(R.integer.column_amount);
         Context context = view.getContext();
-        if (view.findViewById(R.id.gridView) instanceof RecyclerView) {
-            RecyclerView recyclerView = view.findViewById(R.id.gridView);
+        mSize = restoreState(savedInstanceState);
+
+            RecyclerView recyclerView = grid;
             recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            mAdapter = new MyDataAdapter(DataSource.getInstance().getData());
+            mAdapter = new MyDataAdapter(DataSource.getInstance(mSize).getData());
             recyclerView.setAdapter(mAdapter);
-        }
+
+
         Button button = view.findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ++DEFAULT_SIZE;
                 DataSource.push();
-                mAdapter.notifyItemInserted(++DEFAULT_SIZE);
+                mAdapter.notifyItemInserted(DEFAULT_SIZE);
             }
         });
         return view;
     }
+    private Integer restoreState(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            return savedInstanceState.getInt(STATE);
+        }
+        return DEFAULT_SIZE;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(STATE, DEFAULT_SIZE);
+    }
+
+
 
 
     class MyDataAdapter extends RecyclerView.Adapter<MyViewHolder> {
 
         final int TYPE_FIRST = 1;
         final int TYPE_SECOND = 2;
-        List<DataSource.MyData> mData;
+        List<String> mData;
 
-        public MyDataAdapter(List<DataSource.MyData> data) {
+        public MyDataAdapter(List<String> data) {
             mData = data;
         }
 
@@ -86,8 +110,8 @@ public class ListFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-            DataSource.MyData data = mData.get(position);
-            holder.mTitle.setText(data.mTitle);
+            String data = mData.get(position);
+            holder.mTitle.setText(data);
 
             Log.d("ListActivity", "onBindViewHolder " + position);
         }
@@ -116,12 +140,8 @@ public class ListFragment extends Fragment {
                 @Override
                 public void onClick(View view) {
                     int pos = MyViewHolder.this.getAdapterPosition();
-                    DataSource.MyData myData = mAdapter.mData.get(pos);
-                    getFragmentManager()
-                            .beginTransaction()
-                            .replace(R.id.top_container,  SecondFragment.newInstance(Integer.parseInt(myData.mTitle), mTitle.getCurrentTextColor()))
-                            .addToBackStack(null)
-                            .commit();
+                    String myData = mAdapter.mData.get(pos);
+                    ((OnItemSelectedListener)getActivity()).onItemSelected(Integer.parseInt(myData), mTitle.getCurrentTextColor());
 
                 }
             });
